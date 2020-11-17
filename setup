@@ -1,0 +1,38 @@
+#!/bin/sh
+
+# Uso
+# source ./setup   ó    . ./setup
+
+# las imagenes ya deben estar en el folder images, junto con sus .csv
+# - images/
+#   - train/
+#   - test/
+#   - test.csv
+#   - train.csv
+# revisar que las imagenes sean del mismo tipo (mime type) antes de empezar
+# el modelo pre-entrenado debe de estar en su folder y el pipeline en el folder models (ver el
+# ejemplo en el mismo folder)
+cd "images"
+if [ ! -d ".env"  ]; then
+    python3 -m venv .env
+    source ".env/bin/activate" && pip3 install -r "../requirements.txt"
+else
+    source ".env/bin/activate"
+fi
+
+if [ ! -d "models"  ]; then
+    git clone --depth=1 https://github.com/tensorflow/models
+    export PYTHONPATH="$(pwd)/models/research:$(pwd)/models/research/slim:$(pwd)/models:$PYTHONPATH"
+    cd models/research
+    cp object_detection/packages/tf2/setup.py .
+    protoc object_detection/protos/*.proto --python_out=.
+    python3 -m pip install .
+    python3 object_detection/builders/model_builder_tf2_test.py
+    cd "../.."
+fi
+cd ".."
+python3 "scripts/generators/generate_pbtxt.py" "csv" "images/test.csv" "annotations/label_map.pbtxt"
+python3 "scripts/generators/generate_tfrecord.py" "images/test.csv" "annotations/label_map.pbtxt" "images/test" "annotations/test.record"
+python3 "scripts/generators/generate_tfrecord.py" "images/train.csv" "annotations/label_map.pbtxt" "images/train" "annotations/train.record"
+[ "$(which zip)" = "zip not found" ] && exit
+zip -r "uploadToDrive.zip" annotations/ models/ pre-trained-models/ scripts/
