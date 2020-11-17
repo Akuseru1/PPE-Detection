@@ -11,7 +11,7 @@ def inferir():
     Label(text="Por favor esperar unos segundos mientras se inicializa el programa.").place(
         x=40, y=115
     )
-    # webcam.runInference()
+    webcam.runInference()
 
 
 btnInferencia = Button(root, text="Detectar", command=inferir).place(x=200, y=80)
