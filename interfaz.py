@@ -27,7 +27,7 @@ def linuxWrite():
     if any(shell in current_shell for shell in list(shells.keys())):
         with open(os.path.expanduser(shells[current_shell]), "r") as outfile:
             lines = outfile.readlines()
-        with open(os.path.expanduser(shells[current_shell]), "a") as outfile:
+        with open(os.path.expanduser(shells[current_shell]), "w") as outfile:
             import re
 
             for line in lines:
